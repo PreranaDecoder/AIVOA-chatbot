@@ -85,6 +85,10 @@ app.get("/api/history", (req, res) => {
   });
 });
 
+app.use("/", (req, res) => {
+  res.send("Server is running.");
+});
+
 // Start the server
 const PORT = 5000;
 app.listen(PORT, () => {
