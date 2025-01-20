@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import "./Chat.css"; // Import the CSS file for styling
 
 const Chat = () => {
   const [messages, setMessages] = useState([]);
@@ -13,23 +14,25 @@ const Chat = () => {
     const userMessage = input.trim();
     setMessages((prevMessages) => [
       ...prevMessages,
-      { user: "User", text: userMessage },
+      { user: "User", text: userMessage, animationClass: "fade-in-user" },
     ]);
     setLoading(true);
     setError("");
 
     try {
       const response = await axios.post("http://localhost:5000/api/message", {
-        userMessage, // Ensure this matches the backend
+        userMessage,
       });
-
-      console.log("Backend Response:", response.data); // Debugging log
 
       setMessages((prev) => [
         ...prev,
-        { user: "Bot", text: response.data.botResponse }, // Match the backend response key
+        {
+          user: "Bot",
+          text: response.data.botResponse,
+          animationClass: "fade-in-bot",
+        },
       ]);
-      setInput(""); // Clear the input
+      setInput("");
     } catch (err) {
       console.error("Error sending message:", err);
       setError("Failed to send message. Please try again.");
@@ -42,13 +45,13 @@ const Chat = () => {
     const fetchHistory = async () => {
       setLoading(true);
       setError("");
-
       try {
         const response = await axios.get("http://localhost:5000/api/history");
         setMessages(
           response.data.map((msg) => ({
             user: msg.user_message ? "User" : "Bot",
             text: msg.user_message || msg.bot_response,
+            animationClass: msg.user_message ? "fade-in-user" : "fade-in-bot",
           }))
         );
       } catch (err) {
@@ -58,51 +61,38 @@ const Chat = () => {
         setLoading(false);
       }
     };
-
     fetchHistory();
   }, []);
 
   return (
-    <div style={{ maxWidth: "600px", margin: "auto", padding: "1rem" }}>
-      <h2>Chatbot</h2>
-      {error && (
-        <div style={{ color: "red", marginBottom: "1rem" }}>{error}</div>
-      )}
-      <div
-        style={{
-          border: "1px solid #ccc",
-          borderRadius: "10px",
-          padding: "1rem",
-          height: "300px",
-          overflowY: "scroll",
-          marginBottom: "1rem",
-        }}
-      >
+    <div className="chat-container">
+      <h2 className="chat-title">Chatbot</h2>
+      {error && <div className="error-message">{error}</div>}
+      <div className="chat-box">
         {messages.map((msg, idx) => (
-          <div key={idx}>
-            <strong>{msg.user}:</strong> {msg.text}
+          <div key={idx} className={`message ${msg.animationClass}`}>
+            <strong className="message-user">{msg.user}:</strong>{" "}
+            <span className="message-text">{msg.text}</span>
           </div>
         ))}
       </div>
-      <input
-        style={{
-          width: "80%",
-          padding: "0.5rem",
-          marginRight: "0.5rem",
-        }}
-        type="text"
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        placeholder="Type your message..."
-        disabled={loading}
-      />
-      <button
-        onClick={sendMessage}
-        style={{ padding: "0.5rem" }}
-        disabled={loading}
-      >
-        {loading ? "Sending..." : "Send"}
-      </button>
+      <div className="input-container">
+        <input
+          className="chat-input"
+          type="text"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder="Type your message..."
+          disabled={loading}
+        />
+        <button
+          className="send-button"
+          onClick={sendMessage}
+          disabled={loading}
+        >
+          {loading ? "Sending..." : "Send"}
+        </button>
+      </div>
     </div>
   );
 };
