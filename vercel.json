@@ -1,16 +1,37 @@
 {
   "projects": {
     "frontend": {
-      "src": "./frontend"
+      "src": "./chatbot-frontend"
     },
     "backend": {
-      "src": "./backend"
+      "src": "./chatbot-backend"
     }
   },
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "/backend/api/$1"
+      "destination": "/chatbot-backend/api/$1"
+    }
+  ]
+},
+{
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/chatbot-frontend/backend/$1"  // Rewrite API calls to the backend
+    }
+  ],
+  "builds": [
+    {
+      "src": "chatbot-frontend/chatbot-backend/server.js", // Specify where the backend code is
+      "use": "@vercel/node"
+    },
+    {
+      "src": "chatbot-frontend/package.json",  // Build frontend
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "chatbot-frontend/build"
+      }
     }
   ]
 }
